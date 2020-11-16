@@ -15,7 +15,8 @@ const pool = mysql.createPool({
 
 // Sema za validaciju
 const sema = Joi.object().keys({
-    name: Joi.string().trim().min(3).max(48).required()
+    name: Joi.string().trim().min(3).max(48).required(),
+    description: Joi.string().trim().min(3).max(1024).required(),
 });
 
 // Prikaz svih poruka
@@ -37,13 +38,12 @@ route.post('/subjects', (req, res) => {
     let { error } = sema.validate(req.body);  // Object decomposition - dohvatamo samo gresku
     // Ako su podaci neispravni prijavimo gresku
     if (error) {
-        console.log(error)
         res.status(400).send(error.details[0].message);  // Greska zahteva
     }
     else {  // Ako nisu upisemo ih u bazu
         // Izgradimo SQL query string
-        let query = "insert into subject (name) values (?)";
-        let formated = mysql.format(query, [req.body.name]);
+        let query = "insert into subject (name, description) values (?, ?)";
+        let formated = mysql.format(query, [req.body.name, req.body.description]);
         console.log(formated)
 
         // Izvrsimo query
@@ -76,8 +76,8 @@ route.put('/subject/:id', (req, res) => {
     if (error)
         res.status(400).send(error.details[0].message);
     else {
-        let query = "update subject set name=? where subject_id=?";
-        let formated = mysql.format(query, [req.body.name, req.params.id]);
+        let query = "update subject set name=?, description=? where subject_id=?";
+        let formated = mysql.format(query, [req.body.name, req.body.description, req.params.id]);
 
         pool.query(formated, (err, response) => {
             if (err)
