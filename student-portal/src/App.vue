@@ -1,29 +1,30 @@
 <template>
   <div id="app">
-    <div id="nav">
-        <router-link to="/">Home</router-link> |
+    <router-view />
+    <hr style="margin-top: 60px; margin-left: 60px; margin-right: 60px">
+    <div id="nav" style="margin-bottom:20px">
+      <router-link to="/">Home</router-link>
     </div>
-    <router-view/>
   </div>
 </template>
 
 <script>
-    import { mapActions } from 'vuex';
+import { mapActions } from "vuex";
 
-    export default {
-        name: "App",
-        methods: {
-            ...mapActions(['load_subjects'])
-        },
-        mounted: function() {
-            this.load_subjects();
-        }
-    }
+export default {
+  name: "App",
+  methods: {
+    ...mapActions(["load_subjects"]),
+  },
+  mounted: function () {
+    this.load_subjects();
+  },
+};
 </script>
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;

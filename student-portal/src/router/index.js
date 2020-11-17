@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
+import SubjectNews from "@/views/SubjectNews";
 
 Vue.use(VueRouter)
 
@@ -10,11 +11,11 @@ const routes = [
     name: 'home',
     component: Home
   },
-  // {
-  //   path: '/subject/:id',
-  //   name: 'subject',
-  //   component: Subject
-  // }
+  {
+    path: '/subject/:id',
+    name: 'subject',
+    component: SubjectNews
+  }
 ]
 
 const router = new VueRouter({

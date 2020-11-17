@@ -15,16 +15,17 @@ const pool = mysql.createPool({
 
 // Sema za validaciju
 const scheme = Joi.object().keys({
-    name: Joi.string().trim().min(3).max(256).required(),
-    description: Joi.string().trim().min(3).max(1024).required(),
+    subject_id: Joi.number().integer(),
+    title: Joi.string().trim().min(3).max(128).required(),
+    content: Joi.string().trim().min(3).max(2048).required(),
 });
 
 // Prikaz svih poruka
-route.get('/subjects', (req, res) => {
-    // Saljemo upit bazi
-    pool.query('select * from subject', (err, rows) => {
+route.get('/subjects/:id/news', (req, res) => {
+    let query = 'select * from subject_news where subject_id=?';
+    let formatted = mysql.format(query, [req.params.id]);
+    pool.query(formatted, (err, rows) => {
         if (err) {
-            console.log(err)
             res.status(500).send(err.sqlMessage);  // Greska servera
         }
         else {
@@ -34,7 +35,7 @@ route.get('/subjects', (req, res) => {
 });
 
 // Cuvanje nove poruke (vraca korisniku ceo red iz baze)
-route.post('/subjects', (req, res) => {
+route.post('/subjects/:id/news', (req, res) => {
     // Validiramo podatke koje smo dobili od korisnika
     let { error } = scheme.validate(req.body);  // Object decomposition - dohvatamo samo gresku
     // Ako su podaci neispravni prijavimo gresku
@@ -43,8 +44,8 @@ route.post('/subjects', (req, res) => {
     }
     else {  // Ako nisu upisemo ih u bazu
         // Izgradimo SQL query string
-        let query = "insert into subject (name, description) values (?, ?)";
-        let formated = mysql.format(query, [req.body.name, req.body.description]);
+        let query = "insert into subject_news (title, content, subject_id) values (?, ?, ?)";
+        let formated = mysql.format(query, [req.body.title, req.body.content, req.params.id]);
 
         // Izvrsimo query
         pool.query(formated, (err, response) => {
@@ -54,7 +55,7 @@ route.post('/subjects', (req, res) => {
             }
             else {
                 // Ako nema greske dohvatimo kreirani objekat iz baze i posaljemo ga korisniku
-                query = 'select * from subject where subject_id=?';
+                query = 'select * from subject_news where subject_news_id=?';
                 formated = mysql.format(query, [response.insertId]);
 
                 pool.query(formated, (err, rows) => {
@@ -70,21 +71,21 @@ route.post('/subjects', (req, res) => {
     }
 });
 
-route.put('/subjects/:id', (req, res) => {
+route.put('/subjects/:subject_id/news/:news_id', (req, res) => {
     let { error } = scheme.validate(req.body);
 
     if (error)
         res.status(400).send(error.details[0].message);
     else {
-        let query = "update subject set name=?, description=? where subject_id=?";
-        let formated = mysql.format(query, [req.body.name, req.body.description, req.params.id]);
+        let query = "update subject_news set title=?, content=? where subject_news_id=?";
+        let formated = mysql.format(query, [req.body.title, req.body.content, req.params.news_id]);
 
         pool.query(formated, (err, response) => {
             if (err)
                 res.status(500).send(err.sqlMessage);
             else {
-                query = 'select * from subject where subject_id=?';
-                formated = mysql.format(query, [req.params.id]);
+                query = 'select * from subject_news where subject_news_id=?';
+                formated = mysql.format(query, [req.params.news_id]);
 
                 pool.query(formated, (err, rows) => {
                     if (err)
@@ -99,9 +100,9 @@ route.put('/subjects/:id', (req, res) => {
 });
 
 // Brisanje poruke (vraca korisniku ceo red iz baze)
-route.delete('/subjects/:id', (req, res) => {
-    let query = 'select * from subject where subject_id=?';
-    let formated = mysql.format(query, [req.params.id]);
+route.delete('/subjects/:subject_id/news/:news_id', (req, res) => {
+    let query = 'select * from subject_news where subject_news_id=?';
+    let formated = mysql.format(query, [req.params.news_id]);
 
     pool.query(formated, (err, rows) => {
         if (err)
@@ -109,8 +110,8 @@ route.delete('/subjects/:id', (req, res) => {
         else {
             let poruka = rows[0];
 
-            let query = 'delete from subject where subject_id=?';
-            let formated = mysql.format(query, [req.params.id]);
+            let query = 'delete from subject_news where subject_news_id=?';
+            let formated = mysql.format(query, [req.params.news_id]);
 
             pool.query(formated, (err, rows) => {
                 if (err)

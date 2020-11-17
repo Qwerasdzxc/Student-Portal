@@ -39,7 +39,7 @@ export default new Vuex.Store({
 
   actions: {
     load_subjects: function ({ commit }) {
-      fetch('http://localhost/api/subjects', { method: 'get' }).then((response) => {
+      fetch('http://localhost:3000/api/subjects', { method: 'get' }).then((response) => {
         if (!response.ok)
           throw response;
 
@@ -57,7 +57,7 @@ export default new Vuex.Store({
     },
 
     delete_subject: function({ commit }, id) {
-      fetch(`http://localhost/api/subjects/${id}`, { method: 'delete' }).then((response) => {
+      fetch(`http://localhost:3000/api/subjects/${id}`, { method: 'delete' }).then((response) => {
         if (!response.ok)
           throw response;
 
@@ -74,13 +74,14 @@ export default new Vuex.Store({
       });
     },
 
-    new_subject: function({ commit }, message) {
-      fetch('http://localhost/api/subjects', {
-        method: 'post',
+    new_subject: function({ commit }, subject) {
+      fetch('http://localhost:3000/api/subjects', {
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: message
+        body: subject
       }).then((response) => {
         if (!response.ok)
           throw response;
@@ -99,7 +100,7 @@ export default new Vuex.Store({
     },
 
     change_subject: function({ commit }, payload) {
-      fetch(`http://localhost/api/subjects/${payload.subject_id}`, {
+      fetch(`http://localhost:3000/api/subjects/${payload.subject_id}`, {
         method: 'put',
         headers: {
           'Content-Type': 'application/json'
