@@ -1,16 +1,6 @@
 <template>
   <div class="home">
-    <b-jumbotron header-level="4" :header="subject.name">
-      <p style="margin-top: 30px; padding-left: 300px; padding-right: 300px">
-        {{ subject.description }}
-      </p>
-      <b-img
-        style="padding-top: 40px"
-        src="https://raf.edu.rs/images/logo_cir.png"
-        fluid
-        alt="Responsive image"
-      ></b-img>
-    </b-jumbotron>
+    <Header :header="subject.name" subtitle="" :description="subject.description"/>
     <b-button variant="primary" v-b-modal.modal-create-subject-news
       >Create News</b-button
     >
@@ -123,8 +113,13 @@
 
 <script>
 import { mapState, mapActions } from "vuex";
+import Header from "@/components/Header";
+
 export default {
   name: "SubjectNews",
+  components: {
+    Header
+  },
   data() {
     return {
       title: "",

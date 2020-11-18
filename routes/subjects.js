@@ -24,7 +24,6 @@ route.get('/subjects', (req, res) => {
     // Saljemo upit bazi
     pool.query('select * from subject', (err, rows) => {
         if (err) {
-            console.log(err)
             res.status(500).send(err.sqlMessage);  // Greska servera
         }
         else {

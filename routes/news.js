@@ -50,7 +50,6 @@ route.post('/subjects/:id/news', (req, res) => {
         // Izvrsimo query
         pool.query(formated, (err, response) => {
             if (err) {
-                console.log(err)
                 res.status(500).send(err.sqlMessage);
             }
             else {

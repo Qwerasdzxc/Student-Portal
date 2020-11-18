@@ -1,21 +1,11 @@
 <template>
   <div class="home">
-    <b-jumbotron
-      header-level="4"
+    <Header
       header="Student portal"
-      lead="Portal for students of the School of Computing"
-    >
-      <p>
-        Portal is meant for the students to share information and news about
-        subjects they attend
-      </p>
-      <b-img
-        style="padding-top: 40px"
-        src="https://raf.edu.rs/images/logo_cir.png"
-        fluid
-        alt="Responsive image"
-      ></b-img>
-    </b-jumbotron>
+      subtitle="Portal for students of the School of Computing"
+      description="Portal is meant for the students to share information and news about
+        subjects they attend"
+    />
     <b-button variant="primary" v-b-modal.modal-prevent-closing
       >Create Subject</b-button
     >
@@ -63,9 +53,9 @@
             :header="subject.name"
             style="font-weight: bold; margin-top: 40px"
           >
-            <p v-line-clamp="6" style="font-weight: normal">{{
-              subject.description
-            }}</p>
+            <p v-line-clamp="6" style="font-weight: normal">
+              {{ subject.description }}
+            </p>
 
             <b-button
               style="margin-right: 20px"
@@ -88,11 +78,15 @@
 <script>
 import { mapState, mapActions } from "vuex";
 import router from "@/router";
+import Header from "@/components/Header";
 
 export default {
   name: "home",
   computed: {
     ...mapState(["subjects"]),
+  },
+  components: {
+    Header,
   },
   data() {
     return {

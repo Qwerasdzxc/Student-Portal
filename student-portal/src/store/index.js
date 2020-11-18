@@ -166,7 +166,7 @@ export default new Vuex.Store({
 
         return response.json()
       }).then((jsonData) => {
-        commit('remove_subject_news', jsonData.subject_id)
+        commit('remove_subject_news', jsonData.subject_news_id)
       }).catch((error) => {
         if (typeof error.text === 'function')
           error.text().then((errorMessage) => {
