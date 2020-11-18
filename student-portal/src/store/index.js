@@ -5,7 +5,8 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    subjects: []
+    subjects: [],
+    subject_news: []
   },
 
   mutations: {
@@ -26,11 +27,28 @@ export default new Vuex.Store({
       }
     },
 
-    update_subject: function (state, payload) {
-      for (let i = 0; i < state.subjects.length; i++) {
-        if (state.subjects[i].subject_id === parseInt(payload.subject_id)) {
-          state.subjects[i].name = payload.subject.name;
-          state.subject[i].description = payload.subject.description;
+    set_subject_news: function (state, news) {
+      state.subject_news = news;
+    },
+
+    add_subject_news: function (state, news) {
+      state.subject_news.push(news);
+    },
+
+    remove_subject_news: function (state, id) {
+      for (let i = 0; i < state.subject_news.length; i++) {
+        if (state.subject_news[i].subject_news_id === id) {
+          state.subject_news.splice(i, 1);
+          break;
+        }
+      }
+    },
+
+    update_subject_news: function (state, subject_news) {
+      for (let i = 0; i < state.subject_news.length; i++) {
+        if (state.subject_news[i].subject_news_id === parseInt(subject_news.subject_news_id)) {
+          state.subject_news[i].title = subject_news.title;
+          state.subject_news[i].content = subject_news.content;
           break;
         }
       }
@@ -113,6 +131,91 @@ export default new Vuex.Store({
         return response.json();
       }).then((jsonData) => {
         commit('update_subject', {id: payload.subject_id, msg:jsonData});
+      }).catch((error) => {
+        if (typeof error.text === 'function')
+          error.text().then((errorMessage) => {
+            alert(errorMessage);
+          });
+        else
+          alert(error);
+      });
+    },
+
+    load_subject_news: function ({ commit }, subject_id) {
+      fetch(`http://localhost:3000/api/subjects/${subject_id}/news`, { method: 'get' }).then((response) => {
+        if (!response.ok)
+          throw response;
+
+        return response.json()
+      }).then((jsonData) => {
+        commit('set_subject_news', jsonData)
+      }).catch((error) => {
+        if (typeof error.text === 'function')
+          error.text().then((errorMessage) => {
+            alert(errorMessage);
+          });
+        else
+          alert(error);
+      });
+    },
+
+    delete_subject_news: function({ commit }, payload) {
+      fetch(`http://localhost:3000/api/subjects/${payload.subject_id}/news/${payload.subject_news_id}`, { method: 'delete' }).then((response) => {
+        if (!response.ok)
+          throw response;
+
+        return response.json()
+      }).then((jsonData) => {
+        commit('remove_subject_news', jsonData.subject_id)
+      }).catch((error) => {
+        if (typeof error.text === 'function')
+          error.text().then((errorMessage) => {
+            alert(errorMessage);
+          });
+        else
+          alert(error);
+      });
+    },
+
+    new_subject_news: function({ commit }, payload) {
+      fetch(`http://localhost:3000/api/subjects/${payload.subject_id}/news`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: payload.subject_news
+      }).then((response) => {
+        if (!response.ok)
+          throw response;
+
+        return response.json();
+      }).then((jsonData) => {
+        commit('add_subject_news', jsonData);
+      }).catch((error) => {
+        if (typeof error.text === 'function')
+          error.text().then((errorMessage) => {
+            alert(errorMessage);
+          });
+        else
+          alert(error);
+      });
+    },
+
+    change_subject_news: function({ commit }, payload) {
+      fetch(`http://localhost:3000/api/subjects/${payload.subject_news.subject_id}/news/${payload.subject_news.subject_news_id}`, {
+        method: 'put',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: payload.json
+      }).then((response) => {
+        if (!response.ok)
+          throw response;
+
+        return response.json();
+      }).then((jsonData) => {
+        commit('update_subject_news', jsonData);
       }).catch((error) => {
         if (typeof error.text === 'function')
           error.text().then((errorMessage) => {

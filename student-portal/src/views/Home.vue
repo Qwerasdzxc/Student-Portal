@@ -16,9 +16,8 @@
         alt="Responsive image"
       ></b-img>
     </b-jumbotron>
-    <!-- <div id="nav"><router-link to="/">Home</router-link> |</div> -->
     <b-button variant="primary" v-b-modal.modal-prevent-closing
-      >Create New Subject</b-button
+      >Create Subject</b-button
     >
     <b-modal
       id="modal-prevent-closing"
@@ -64,15 +63,15 @@
             :header="subject.name"
             style="font-weight: bold; margin-top: 40px"
           >
-            <b-card-text style="font-weight: normal">{{
+            <p v-line-clamp="6" style="font-weight: normal">{{
               subject.description
-            }}</b-card-text>
+            }}</p>
 
             <b-button
               style="margin-right: 20px"
               variant="outline-primary"
               @click="showSubjectNews(subject)"
-              >News and information about subject</b-button
+              >News and information</b-button
             >
             <b-button
               variant="danger"
