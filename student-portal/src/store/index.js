@@ -20,7 +20,7 @@ export default new Vuex.Store({
 
     remove_subject: function (state, id) {
       for (let i = 0; i < state.subjects.length; i++) {
-        if (state.subjects[i].subject_id === id) {
+        if (state.subjects[i]._id === id) {
           state.subjects.splice(i, 1);
           break;
         }
@@ -37,7 +37,7 @@ export default new Vuex.Store({
 
     remove_subject_news: function (state, id) {
       for (let i = 0; i < state.subject_news.length; i++) {
-        if (state.subject_news[i].subject_news_id === id) {
+        if (state.subject_news[i]._id === id) {
           state.subject_news.splice(i, 1);
           break;
         }
@@ -46,7 +46,7 @@ export default new Vuex.Store({
 
     update_subject_news: function (state, subject_news) {
       for (let i = 0; i < state.subject_news.length; i++) {
-        if (state.subject_news[i].subject_news_id === parseInt(subject_news.subject_news_id)) {
+        if (state.subject_news[i]._id === subject_news._id) {
           state.subject_news[i].title = subject_news.title;
           state.subject_news[i].content = subject_news.content;
           break;
@@ -81,7 +81,7 @@ export default new Vuex.Store({
 
         return response.json()
       }).then((jsonData) => {
-        commit('remove_subject', jsonData.subject_id)
+        commit('remove_subject', jsonData._id)
       }).catch((error) => {
         if (typeof error.text === 'function')
           error.text().then((errorMessage) => {
@@ -203,7 +203,7 @@ export default new Vuex.Store({
     },
 
     change_subject_news: function({ commit }, payload) {
-      fetch(`http://localhost:3000/api/subjects/${payload.subject_news.subject_id}/news/${payload.subject_news.subject_news_id}`, {
+      fetch(`http://localhost:3000/api/subjects/${payload.subject_news.subject_id}/news/${payload.subject_news._id}`, {
         method: 'put',
         headers: {
           'Content-Type': 'application/json'

@@ -48,7 +48,7 @@
     </b-modal>
     <b-container class="bv-example-row">
       <b-row cols="2">
-        <b-col v-for="subject in subjects" :key="subject.subject_id">
+        <b-col v-for="subject in subjects" :key="subject._id">
           <b-card
             :header="subject.name"
             style="font-weight: bold; margin-top: 40px"
@@ -99,7 +99,7 @@ export default {
   methods: {
     ...mapActions(["new_subject", "delete_subject"]),
     showSubjectNews: function (subject) {
-      router.push({ path: `/subject/${subject.subject_id}` });
+      router.push({ path: `/subject/${subject._id}` });
     },
     checkFormValidity() {
       const valid = this.$refs.form.checkValidity();
@@ -151,7 +151,8 @@ export default {
           centered: true,
         })
         .then((value) => {
-          if (value) this.delete_subject(subject.subject_id);
+          console.log(subject._id);
+          if (value) this.delete_subject(subject._id);
         })
         .catch((e) => {
           console.log(e);

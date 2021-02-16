@@ -1,17 +1,8 @@
 const express = require('express');
 const Joi = require('joi');
+const { ObjectId, MongoClient } = require('mongodb');
 const mysql = require('mysql');
 const route = express.Router();
-
-// Koristimo pool da bi automatski aquire-ovao i release-ovao konekcije
-const pool = mysql.createPool({
-    connectionLimit: 100,
-    host: 'localhost',
-    port: '8000',
-    user: 'root',
-    password: '',
-    database: 'student_portal'
-});
 
 // Sema za validaciju
 const scheme = Joi.object().keys({
@@ -22,80 +13,104 @@ const scheme = Joi.object().keys({
 
 // Prikaz svih poruka
 route.get('/subjects/:id/news', (req, res) => {
-    let query = 'select * from subject_news where subject_id=?';
-    let formatted = mysql.format(query, [req.params.id]);
-    pool.query(formatted, (err, rows) => {
-        if (err) {
-            res.status(500).send(err.sqlMessage);  // Greska servera
-        }
-        else {
-            res.send(rows);
-        }
+    MongoClient.connect(mongoUrl, function (err, client) {
+        client
+            .db('student_portal')
+            .collection('portal_news')
+            .find({ subject_id: ObjectId(req.params.id) })
+            .toArray(function (err, result) {
+                if (err) res.status(500).send(err.errmsg);
+
+                res.send(result);
+            });
     });
 });
 
 // Cuvanje nove poruke (vraca korisniku ceo red iz baze)
 route.post('/subjects/:id/news', (req, res) => {
     // Validiramo podatke koje smo dobili od korisnika
-    let { error } = scheme.validate(req.body);  // Object decomposition - dohvatamo samo gresku
+    let { error } = scheme.validate(req.body); // Object decomposition - dohvatamo samo gresku
     // Ako su podaci neispravni prijavimo gresku
     if (error) {
-        res.status(400).send(error.details[0].message);  // Greska zahteva
-    }
-    else {  // Ako nisu upisemo ih u bazu
-        // Izgradimo SQL query string
-        let query = "insert into subject_news (title, content, subject_id) values (?, ?, ?)";
-        let formated = mysql.format(query, [req.body.title, req.body.content, req.params.id]);
+        res.status(400).send(error.details[0].message); // Greska zahteva
+    } else {
+        MongoClient.connect(mongoUrl, function (err, client) {
+            client
+                .db('student_portal')
+                .collection('portal_news')
+                .insertOne(
+                    {
+                        title: req.body.title,
+                        content: req.body.content,
+                        subject_id: ObjectId(req.params.id),
+                    },
+                    function (err, response) {
+                        if (err) res.status(500).send(err.errmsg);
 
-        // Izvrsimo query
-        pool.query(formated, (err, response) => {
-            if (err) {
-                res.status(500).send(err.sqlMessage);
-            }
-            else {
-                // Ako nema greske dohvatimo kreirani objekat iz baze i posaljemo ga korisniku
-                query = 'select * from subject_news where subject_news_id=?';
-                formated = mysql.format(query, [response.insertId]);
-
-                pool.query(formated, (err, rows) => {
-                    if (err) {
-                        console.log(err)
-                        res.status(500).send(err.sqlMessage);
+                        res.send(response.ops[0]);
                     }
-                    else
-                        res.send(rows[0]);
-                });
-            }
+                );
         });
     }
 });
 
 route.put('/subjects/:subject_id/news/:news_id', (req, res) => {
+    console.log(req.path);
     let { error } = scheme.validate(req.body);
 
-    if (error)
-        res.status(400).send(error.details[0].message);
+    if (error) res.status(400).send(error.details[0].message);
     else {
-        let query = "update subject_news set title=?, content=? where subject_news_id=?";
-        let formated = mysql.format(query, [req.body.title, req.body.content, req.params.news_id]);
+        MongoClient.connect(mongoUrl, function (err, client) {
+            client
+                .db('student_portal')
+                .collection('portal_news')
+                .updateOne(
+                    { _id: ObjectId(req.params.news_id) },
+                    {
+                        $set: {
+                            title: req.body.title,
+                            content: req.body.content,
+                        },
+                    },
+                    function (err, result) {
+                        if (err) res.status(500).send(err.errmsg);
 
-        pool.query(formated, (err, response) => {
-            if (err)
-                res.status(500).send(err.sqlMessage);
-            else {
-                query = 'select * from subject_news where subject_news_id=?';
-                formated = mysql.format(query, [req.params.news_id]);
+                        client
+                            .db('student_portal')
+                            .collection('portal_news')
+                            .findOne(
+                                { _id: ObjectId(req.params.news_id) },
+                                function (err, response) {
+                                    if (err) res.status(500).send(err.errmsg);
 
-                pool.query(formated, (err, rows) => {
-                    if (err)
-                        res.status(500).send(err.sqlMessage);
-                    else
-                        res.send(rows[0]);
-                });
-            }
+                                    console.log(response);
+                                    res.send(response);
+                                }
+                            );
+                    }
+                );
         });
-    }
+        // let query =
+        //     'update subject_news set title=?, content=? where subject_news_id=?';
+        // let formated = mysql.format(query, [
+        //     req.body.title,
+        //     req.body.content,
+        //     req.params.news_id,
+        // ]);
 
+        // pool.query(formated, (err, response) => {
+        //     if (err) res.status(500).send(err.sqlMessage);
+        //     else {
+        //         query = 'select * from subject_news where subject_news_id=?';
+        //         formated = mysql.format(query, [req.params.news_id]);
+
+        //         pool.query(formated, (err, rows) => {
+        //             if (err) res.status(500).send(err.sqlMessage);
+        //             else res.send(rows[0]);
+        //         });
+        //     }
+        // });
+    }
 });
 
 // Brisanje poruke (vraca korisniku ceo red iz baze)
@@ -104,8 +119,7 @@ route.delete('/subjects/:subject_id/news/:news_id', (req, res) => {
     let formated = mysql.format(query, [req.params.news_id]);
 
     pool.query(formated, (err, rows) => {
-        if (err)
-            res.status(500).send(err.sqlMessage);
+        if (err) res.status(500).send(err.sqlMessage);
         else {
             let poruka = rows[0];
 
@@ -113,10 +127,8 @@ route.delete('/subjects/:subject_id/news/:news_id', (req, res) => {
             let formated = mysql.format(query, [req.params.news_id]);
 
             pool.query(formated, (err, rows) => {
-                if (err)
-                    res.status(500).send(err.sqlMessage);
-                else
-                    res.send(poruka);
+                if (err) res.status(500).send(err.sqlMessage);
+                else res.send(poruka);
             });
         }
     });

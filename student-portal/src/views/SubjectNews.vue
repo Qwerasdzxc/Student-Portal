@@ -1,6 +1,10 @@
 <template>
   <div class="home">
-    <Header :header="subject.name" subtitle="" :description="subject.description"/>
+    <Header
+      :header="subject.name"
+      subtitle=""
+      :description="subject.description"
+    />
     <b-button variant="primary" v-b-modal.modal-create-subject-news
       >Create News</b-button
     >
@@ -82,7 +86,7 @@
       <b-row cols="1">
         <b-col
           v-for="subject_news_item in subject_news"
-          :key="subject_news_item.subject_news_id"
+          :key="subject_news_item._id"
         >
           <b-card
             :header="subject_news_item.title"
@@ -118,7 +122,7 @@ import Header from "@/components/Header";
 export default {
   name: "SubjectNews",
   components: {
-    Header
+    Header,
   },
   data() {
     return {
@@ -134,8 +138,9 @@ export default {
 
     subject: function () {
       for (let i = 0; i < this.subjects.length; i++)
-        if (this.subjects[i].subject_id === parseInt(this.$route.params.id))
+        if (this.subjects[i]._id === this.$route.params.id) {
           return this.subjects[i];
+        }
 
       return null;
     },
@@ -195,11 +200,14 @@ export default {
 
       // Push the name to submitted names
       const subjectNewsData = JSON.stringify({
-          title: this.title,
-          content: this.content,
+        title: this.title,
+        content: this.content,
       });
 
-      this.new_subject_news({subject_id: this.subject.subject_id, subject_news: subjectNewsData});
+      this.new_subject_news({
+        subject_id: this.subject._id,
+        subject_news: subjectNewsData,
+      });
 
       // Hide the modal manually
       this.$nextTick(() => {
@@ -217,7 +225,10 @@ export default {
         content: this.content,
       });
 
-      this.change_subject_news({subject_news: this.selected_subject_news, json:subjectNewsData});
+      this.change_subject_news({
+        subject_news: this.selected_subject_news,
+        json: subjectNewsData,
+      });
 
       // Hide the modal manually
       this.$nextTick(() => {
@@ -243,8 +254,8 @@ export default {
         .then((value) => {
           if (value)
             this.delete_subject_news({
-              subject_id: subject_news.subject_id,
-              subject_news_id: subject_news.subject_news_id,
+              subject_id: subject_news._id,
+              subject_news_id: subject_news._id,
             });
         })
         .catch((e) => {
@@ -253,7 +264,8 @@ export default {
     },
   },
   mounted: function () {
-    this.load_subject_news(this.subject.subject_id);
+    console.log("mounted");
+    this.load_subject_news(this.subject._id);
   },
 };
 </script>

@@ -3,13 +3,40 @@ const subjects = require('./routes/subjects');
 const news = require('./routes/news');
 const history = require('connect-history-api-fallback');
 const path = require('path');
+const { MongoClient } = require('mongodb');
+var session = require('express-session');
 
 const app = express();
 
-app.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "GET", "PUT", "POST", "DELETE", "OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+app.use(
+    session({
+        secret: 'keyboard cat',
+        resave: false,
+        saveUninitialized: true,
+        cookie: { maxAge: 1210000000, resave: false }, // dve nedelje
+    })
+);
+
+const mongoUrl = 'mongodb://localhost:27017/student_portal';
+
+global.mongoUrl = mongoUrl;
+
+module.exports = mongoUrl;
+
+app.use(function (req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header(
+        'Access-Control-Allow-Methods',
+        'GET',
+        'PUT',
+        'POST',
+        'DELETE',
+        'OPTIONS'
+    );
+    res.header(
+        'Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, Accept'
+    );
     next();
 });
 
