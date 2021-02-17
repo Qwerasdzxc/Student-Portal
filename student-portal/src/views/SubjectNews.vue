@@ -252,11 +252,13 @@ export default {
           }
         )
         .then((value) => {
-          if (value)
+          if (value) {
+            console.log(subject_news._id);
             this.delete_subject_news({
               subject_id: subject_news._id,
               subject_news_id: subject_news._id,
             });
+          }
         })
         .catch((e) => {
           console.log(e);
@@ -264,7 +266,9 @@ export default {
     },
   },
   mounted: function () {
-    console.log("mounted");
+    if (!this.subject) {
+      this.load_subject
+    }
     this.load_subject_news(this.subject._id);
   },
 };

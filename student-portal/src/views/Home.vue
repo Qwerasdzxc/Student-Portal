@@ -97,7 +97,7 @@ export default {
     };
   },
   methods: {
-    ...mapActions(["new_subject", "delete_subject"]),
+    ...mapActions(["load_subjects", "new_subject", "delete_subject"]),
     showSubjectNews: function (subject) {
       router.push({ path: `/subject/${subject._id}` });
     },
@@ -159,5 +159,8 @@ export default {
         });
     },
   },
+  mounted: function () {
+    this.load_subjects();
+  }
 };
 </script>

@@ -4,6 +4,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 const mysql = require('mysql');
 const route = express.Router();
 const crypto = require('crypto');
+const { apiAuthChecker } = require('../student-portal/middleware');
 
 const scheme = Joi.object().keys({
     name: Joi.string().trim().min(3).max(256).required(),
@@ -11,7 +12,7 @@ const scheme = Joi.object().keys({
 });
 
 // Prikaz svih poruka
-route.get('/subjects', (req, res) => {
+route.get('/subjects', apiAuthChecker, (req, res) => {
     MongoClient.connect(mongoUrl, function (err, client) {
         client
             .db('student_portal')
@@ -26,7 +27,7 @@ route.get('/subjects', (req, res) => {
 });
 
 // Cuvanje nove poruke (vraca korisniku ceo red iz baze)
-route.post('/subjects', (req, res) => {
+route.post('/subjects', apiAuthChecker, (req, res) => {
     // Validiramo podatke koje smo dobili od korisnika
     let { error } = scheme.validate(req.body); // Object decomposition - dohvatamo samo gresku
 
@@ -97,7 +98,7 @@ route.post('/subjects', (req, res) => {
 // });
 
 // Brisanje poruke (vraca korisniku ceo red iz baze)
-route.delete('/subjects/:id', (req, res) => {
+route.delete('/subjects/:id', apiAuthChecker, (req, res) => {
     MongoClient.connect(mongoUrl, function (err, client) {
         client
             .db('student_portal')

@@ -2,6 +2,7 @@ const express = require('express');
 const Joi = require('joi');
 const { ObjectId, MongoClient } = require('mongodb');
 const mysql = require('mysql');
+const { apiAuthChecker } = require('../student-portal/middleware');
 const route = express.Router();
 
 // Sema za validaciju
@@ -12,7 +13,7 @@ const scheme = Joi.object().keys({
 });
 
 // Prikaz svih poruka
-route.get('/subjects/:id/news', (req, res) => {
+route.get('/subjects/:id/news', apiAuthChecker, (req, res) => {
     MongoClient.connect(mongoUrl, function (err, client) {
         client
             .db('student_portal')
@@ -26,8 +27,8 @@ route.get('/subjects/:id/news', (req, res) => {
     });
 });
 
-// Cuvanje nove poruke (vraca korisniku ceo red iz baze)
-route.post('/subjects/:id/news', (req, res) => {
+// Cuvanje nove objave (vraca korisniku ceo red iz baze)
+route.post('/subjects/:id/news', apiAuthChecker, (req, res) => {
     // Validiramo podatke koje smo dobili od korisnika
     let { error } = scheme.validate(req.body); // Object decomposition - dohvatamo samo gresku
     // Ako su podaci neispravni prijavimo gresku
@@ -54,7 +55,7 @@ route.post('/subjects/:id/news', (req, res) => {
     }
 });
 
-route.put('/subjects/:subject_id/news/:news_id', (req, res) => {
+route.put('/subjects/:subject_id/news/:news_id', apiAuthChecker, (req, res) => {
     console.log(req.path);
     let { error } = scheme.validate(req.body);
 
@@ -90,47 +91,25 @@ route.put('/subjects/:subject_id/news/:news_id', (req, res) => {
                     }
                 );
         });
-        // let query =
-        //     'update subject_news set title=?, content=? where subject_news_id=?';
-        // let formated = mysql.format(query, [
-        //     req.body.title,
-        //     req.body.content,
-        //     req.params.news_id,
-        // ]);
-
-        // pool.query(formated, (err, response) => {
-        //     if (err) res.status(500).send(err.sqlMessage);
-        //     else {
-        //         query = 'select * from subject_news where subject_news_id=?';
-        //         formated = mysql.format(query, [req.params.news_id]);
-
-        //         pool.query(formated, (err, rows) => {
-        //             if (err) res.status(500).send(err.sqlMessage);
-        //             else res.send(rows[0]);
-        //         });
-        //     }
-        // });
     }
 });
 
 // Brisanje poruke (vraca korisniku ceo red iz baze)
-route.delete('/subjects/:subject_id/news/:news_id', (req, res) => {
-    let query = 'select * from subject_news where subject_news_id=?';
-    let formated = mysql.format(query, [req.params.news_id]);
-
-    pool.query(formated, (err, rows) => {
-        if (err) res.status(500).send(err.sqlMessage);
-        else {
-            let poruka = rows[0];
-
-            let query = 'delete from subject_news where subject_news_id=?';
-            let formated = mysql.format(query, [req.params.news_id]);
-
-            pool.query(formated, (err, rows) => {
-                if (err) res.status(500).send(err.sqlMessage);
-                else res.send(poruka);
-            });
-        }
+route.delete('/subjects/:subject_id/news/:news_id', apiAuthChecker, (req, res) => {
+    MongoClient.connect(mongoUrl, function (err, client) {
+        client
+            .db('student_portal')
+            .collection('portal_news')
+            .findOneAndDelete(
+                { _id: ObjectId(req.params.news_id) },
+                async function (err, result) {
+                    if (err) {
+                        res.status(500).send(err.errmsg);
+                    } else {
+                        res.send(result.value);
+                    }
+                }
+            );
     });
 });
 
