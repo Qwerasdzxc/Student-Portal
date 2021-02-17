@@ -1,0 +1,15 @@
+{% extends 'master.html' %}
+
+{% block title %}
+    New article
+{% endblock %}
+
+{% block content %}
+
+    <form method="post" action="{% url 'portal:new_subject' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" class="btn btn-primary btn-lg" value="Add"/>
+    </form>
+
+{% endblock %}

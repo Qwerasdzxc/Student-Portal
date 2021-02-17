@@ -1,4 +1,5 @@
 from djongo import models
+from django.contrib.auth.models import User
 
 
 class Subject(models.Model):
@@ -14,6 +15,7 @@ class News(models.Model):
     title = models.CharField(max_length=128)
     content = models.TextField()
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='news_posts', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title

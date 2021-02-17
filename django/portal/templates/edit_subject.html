@@ -1,0 +1,16 @@
+{% extends 'master.html' %}
+
+{% block title %}
+    Edit subject
+{% endblock %}
+
+{% block content %}
+
+    <form method="post" action="{% url 'portal:edit_subject' id %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <input type="submit" class="btn btn-primary btn-lg" value="Save"/>
+    </form>
+
+{% endblock %}

@@ -44,6 +44,7 @@ route.post('/subjects/:id/news', apiAuthChecker, (req, res) => {
                         title: req.body.title,
                         content: req.body.content,
                         subject_id: ObjectId(req.params.id),
+                        user_id: req.session.user.id
                     },
                     function (err, response) {
                         if (err) res.status(500).send(err.errmsg);
@@ -62,6 +63,11 @@ route.put('/subjects/:subject_id/news/:news_id', apiAuthChecker, (req, res) => {
     if (error) res.status(400).send(error.details[0].message);
     else {
         MongoClient.connect(mongoUrl, function (err, client) {
+            client.db('student_portal').collection('portal_news').findOne({ _id: ObjectId(req.params.news_id) }, function (err, result) {
+                if (result.user_id != req.session.user.id)
+                    res.status(500).send("Invalid request");
+            })
+
             client
                 .db('student_portal')
                 .collection('portal_news')
@@ -84,7 +90,6 @@ route.put('/subjects/:subject_id/news/:news_id', apiAuthChecker, (req, res) => {
                                 function (err, response) {
                                     if (err) res.status(500).send(err.errmsg);
 
-                                    console.log(response);
                                     res.send(response);
                                 }
                             );
@@ -97,6 +102,11 @@ route.put('/subjects/:subject_id/news/:news_id', apiAuthChecker, (req, res) => {
 // Brisanje poruke (vraca korisniku ceo red iz baze)
 route.delete('/subjects/:subject_id/news/:news_id', apiAuthChecker, (req, res) => {
     MongoClient.connect(mongoUrl, function (err, client) {
+        client.db('student_portal').collection('portal_news').findOne({ _id: ObjectId(req.params.news_id) }, function (err, result) {
+            if (result.user_id != req.session.user.id)
+                res.status(500).send("Invalid request");
+        })
+
         client
             .db('student_portal')
             .collection('portal_news')

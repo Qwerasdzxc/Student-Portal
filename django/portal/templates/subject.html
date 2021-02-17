@@ -1,0 +1,45 @@
+{% extends 'master.html' %}
+
+{% block content %}
+
+    <div class="card">
+        <div class="card-header">
+            <h1>
+                {{ subject.name }}
+                {% if perms.portal.change_subject %}
+                    <a href="{% url 'portal:edit_subject' subject.pk %}">
+                        <span class="badge badge-primary">Edit</span>
+                    </a>
+                {% endif %}
+            </h1>
+        </div>
+        <div class="card-body">
+            <blockquote class="blockquote mb-0">
+                <p>{{ subject.description }}</p>
+            </blockquote>
+        </div>
+    </div>
+    <h1>News</h1>
+    <div class="list-group">
+        {% for news_item in news %}
+        <div class="card">
+            <div class="card-header">
+                <h1>
+                    {{ news_item.title }}
+                    {% if perms.portal.delete_news %}
+                        <a href="{% url 'portal:delete_news' subject.pk news_item.pk %}">
+                            <span class="badge badge-danger">Delete</span>
+                        </a>
+                    {% endif %}
+                </h1>
+            </div>
+            <div class="card-body">
+                <blockquote class="blockquote mb-0">
+                    <p>{{ news_item.content }}</p>
+                </blockquote>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+{% endblock %}

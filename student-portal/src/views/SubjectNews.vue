@@ -96,18 +96,20 @@
               subject_news_item.content
             }}</b-card-text>
 
-            <b-button
-              style="margin-right: 20px"
-              variant="outline-primary"
-              v-b-modal.modal-update-subject-news
-              @click="selectSubjectNewsForUpdate(subject_news_item)"
-              >Update news</b-button
-            >
-            <b-button
-              variant="danger"
-              @click="showDeleteConfirmationDialog(subject_news_item)"
-              >Delete news</b-button
-            >
+            <div v-if="subject_news_item.user_id == user.id">
+              <b-button
+                style="margin-right: 20px"
+                variant="outline-primary"
+                v-b-modal.modal-update-subject-news
+                @click="selectSubjectNewsForUpdate(subject_news_item)"
+                >Update news</b-button
+              >
+              <b-button
+                variant="danger"
+                @click="showDeleteConfirmationDialog(subject_news_item)"
+                >Delete news</b-button
+              >
+            </div>
           </b-card></b-col
         >
       </b-row>
@@ -134,7 +136,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["subjects", "subject_news"]),
+    ...mapState(["subjects", "subject_news", "user"]),
 
     subject: function () {
       for (let i = 0; i < this.subjects.length; i++)
@@ -267,7 +269,7 @@ export default {
   },
   mounted: function () {
     if (!this.subject) {
-      this.load_subject
+      this.load_subject;
     }
     this.load_subject_news(this.subject._id);
   },
